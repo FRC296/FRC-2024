@@ -52,11 +52,12 @@ public class MAXSwerveModule {
         m_turningPIDController.setFeedbackDevice(m_turningEncoder);
 
 // Setup encoder for the driving TalonFX.
-        m_drivingTalonFX.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 10);
+        m_drivingTalonFX.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 30);
 
 // Apply position and velocity conversion factors for the driving encoder.
-        double drivingEncoderCountsPerRevolution = 2048.0;
-        m_drivingTalonFX.configSelectedFeedbackCoefficient(ModuleConstants.kDrivingEncoderPositionFactor / drivingEncoderCountsPerRevolution, 0, 10);
+        // double drivingEncoderCountsPerRevolution = 2048.0;
+        // m_drivingTalonFX.configSelectedFeedbackCoefficient(ModuleConstants.kDrivingEncoderPositionFactor / drivingEncoderCountsPerRevolution, 0, 10);
+        // m_drivingTalonFX.configSelectedFeedbackCoefficient(ModuleConstants.kDrivingEncoderVelocityFactor);
 
 // Apply position and velocity conversion factors for the turning encoder.
         m_turningEncoder.setPositionConversionFactor(ModuleConstants.kTurningEncoderPositionFactor);
@@ -82,6 +83,8 @@ public class MAXSwerveModule {
         m_turningPIDController.setFF(ModuleConstants.kTurningFF);
         m_turningPIDController.setOutputRange(ModuleConstants.kTurningMinOutput,
                 ModuleConstants.kTurningMaxOutput);
+        m_turningPIDController.setPositionPIDWrappingEnabled(true);
+        m_turningPIDController.setPositionPIDWrappingMaxInput(6.2831854820251465);
 
         m_drivingTalonFX.setNeutralMode(ModuleConstants.kDrivingMotorNeutralMode);
         m_turningSparkMax.setIdleMode(ModuleConstants.kTurningMotorIdleMode);
@@ -139,7 +142,7 @@ public class MAXSwerveModule {
                 new Rotation2d(m_turningEncoder.getPosition()));
 
         // Command driving and turning SPARKS MAX towards their respective setpoints.
-        m_drivingTalonFX.set(ControlMode.Velocity, optimizedDesiredState.speedMetersPerSecond);
+        m_drivingTalonFX.set(ControlMode.Velocity, optimizedDesiredState.speedMetersPerSecond / ModuleConstants.kDrivingEncoderVelocityFactor);
         m_turningPIDController.setReference(optimizedDesiredState.angle.getRadians(), CANSparkMax.ControlType.kPosition);
 
         m_desiredState = desiredState;
