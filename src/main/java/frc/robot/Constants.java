@@ -36,9 +36,9 @@ public final class Constants {
     public static final double kRotationalSlewRate = 2.0; // percent per second (1 = 100%)
 
     // Chassis configuration
-    public static final double kTrackWidth = Units.inchesToMeters(14.5);
+    public static final double kTrackWidth = Units.inchesToMeters(26.25);
     // Distance between centers of right and left wheels on robot
-    public static final double kWheelBase = Units.inchesToMeters(14.5);
+    public static final double kWheelBase = Units.inchesToMeters(26.25);
     // Distance between front and back wheels on robot
     public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
         new Translation2d(kWheelBase / 2, kTrackWidth / 2),
@@ -53,14 +53,14 @@ public final class Constants {
     public static final double kBackRightChassisAngularOffset = Math.PI / 2;
 
     // SPARK MAX CAN IDs
-    public static final int kFrontLeftDrivingCanId = 14;
+    public static final int kFrontLeftDrivingCanId = 13;
     public static final int kRearLeftDrivingCanId = 15;
-    public static final int kFrontRightDrivingCanId = 13;
+    public static final int kFrontRightDrivingCanId = 14;
     public static final int kRearRightDrivingCanId = 12;
 
-    public static final int kFrontLeftTurningCanId = 10;
+    public static final int kFrontLeftTurningCanId = 3;
     public static final int kRearLeftTurningCanId = 1;
-    public static final int kFrontRightTurningCanId = 3;
+    public static final int kFrontRightTurningCanId = 10;
     public static final int kRearRightTurningCanId = 2;
 
     public static final boolean kGyroReversed = false;
