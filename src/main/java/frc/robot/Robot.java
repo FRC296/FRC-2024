@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -23,6 +25,7 @@ public class Robot extends TimedRobot {
   private double LimelightTX;
   private double LimelightTID;
   private Pose3d LimelightBotPose; 
+  
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -50,8 +53,8 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
     LimelightTX = LimelightHelpers.getTX("");
     LimelightTID = LimelightHelpers.getFiducialID("");
-    LimelightBotPose = LimelightHelpers.getBotPose3d_TargetSpace("");
-    System.out.println(LimelightBotPose);
+    //LimelightBotPose = LimelightHelpers.getBotPose3d_TargetSpace("");
+   // System.out.println(LimelightBotPose);
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

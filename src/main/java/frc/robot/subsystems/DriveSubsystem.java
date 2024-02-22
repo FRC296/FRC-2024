@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -17,6 +19,7 @@ import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import frc.robot.Constants.DriveConstants;
 import frc.utils.SwerveUtils;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 public class DriveSubsystem extends SubsystemBase {
   // Create MAXSwerveModules
@@ -63,10 +66,11 @@ public class DriveSubsystem extends SubsystemBase {
           m_rearRight.getPosition()
       });
 
+  
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
   }
-
+  public static int lastAmpShoot;
   @Override
   public void periodic() {
     // Update the odometry in the periodic block
@@ -195,7 +199,19 @@ public class DriveSubsystem extends SubsystemBase {
     m_rearLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)));
     m_rearRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
   }
-
+  public void ampShoot(TalonSRX bottomRoller, TalonSRX topRoller, TalonSRX belt1, TalonSRX belt2) {
+    if (System.currentTimeMillis() - lastAmpShoot < 1000) {
+      bottomRoller.set(ControlMode.PercentOutput, 0.7);
+      topRoller.set(ControlMode.PercentOutput, 0.2);
+      if (System.currentTimeMillis() - lastAmpShoot > 500) {
+        belt1.set(ControlMode.PercentOutput, 1);
+        belt2.set(ControlMode.PercentOutput, 1);
+      }
+    }
+  }
+  public void Align() {
+    System.out.println("align");
+  }
   /**
    * Sets the swerve ModuleStates.
    *
