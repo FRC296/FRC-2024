@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.LimelightHelpers;
+import frc.robot.RobotContainer;
 import frc.utils.SwerveUtils;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -59,6 +60,8 @@ public class DriveSubsystem extends SubsystemBase {
 
   private long m_lastAmpShoot;
   private boolean m_shoot = false;
+  
+  private int alignCounter;
   
 
   // Odometry class for tracking robot pose
@@ -212,12 +215,7 @@ public class DriveSubsystem extends SubsystemBase {
     }
   }
 
-  public void startAlign() {
-    if (!m_shoot) {
-      m_lastAmpShoot = System.currentTimeMillis();
-      m_shoot = true;
-    }
-  }
+
 
   public void Shoot(TalonSRX bottomRoller, TalonSRX topRoller, TalonSRX belt1, TalonSRX belt2, String ampOrSpeaker) {
     if (m_shoot) {
@@ -241,16 +239,28 @@ public class DriveSubsystem extends SubsystemBase {
     return -(1 / (3*distance + 1)) + 1;
   }
   public void Align() {
-    System.out.println("align");
     double tx = LimelightHelpers.getBotPose3d_TargetSpace("").getX()-AutoConstants.kIdealSpeakerPosition.getX();
     double tz = LimelightHelpers.getBotPose3d_TargetSpace("").getZ()-AutoConstants.kIdealSpeakerPosition.getZ();
+    double ID = LimelightHelpers.getFiducialID("");
     double theta = Math.atan2(tz,tx) + (Math.PI/2);
-    System.out.println(theta);
-    m_frontLeft.setDesiredState(new SwerveModuleState(0.3*speedAdjust(Math.hypot(tx, tz)), Rotation2d.fromRadians(theta)));
-    m_frontRight.setDesiredState(new SwerveModuleState(0.3*speedAdjust(Math.hypot(tx, tz)), Rotation2d.fromRadians(theta)));
-    m_rearLeft.setDesiredState(new SwerveModuleState(0.3*speedAdjust(Math.hypot(tx, tz)), Rotation2d.fromRadians(theta)));
-    m_rearRight.setDesiredState(new SwerveModuleState(0.3*speedAdjust(Math.hypot(tx, tz)), Rotation2d.fromRadians(theta)));
-    
+    System.out.println(ID);
+    double distance = Math.hypot(tx, tz);
+    if (ID == 4 || ID == 7) {
+      if (distance > 0.1 && alignCounter < 5){
+        m_frontLeft.setDesiredState(new SwerveModuleState(0.6*speedAdjust(distance), Rotation2d.fromRadians(theta)));
+        m_frontRight.setDesiredState(new SwerveModuleState(0.6*speedAdjust(distance), Rotation2d.fromRadians(theta)));
+        m_rearLeft.setDesiredState(new SwerveModuleState(0.6*speedAdjust(distance), Rotation2d.fromRadians(theta)));
+        m_rearRight.setDesiredState(new SwerveModuleState(0.6*speedAdjust(distance), Rotation2d.fromRadians(theta)));
+      } else {
+        setX();
+        if (alignCounter >= 5) {
+          startShoot();
+        } else {
+          System.out.println("aligned");
+          alignCounter++;
+        }
+      }
+    }
   }
   /**
    * Sets the swerve ModuleStates.
