@@ -51,10 +51,6 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
-    LimelightTX = LimelightHelpers.getTX("");
-    LimelightTID = LimelightHelpers.getFiducialID("");
-    //LimelightBotPose = LimelightHelpers.getBotPose3d_TargetSpace("");
-   // System.out.println(LimelightBotPose);
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

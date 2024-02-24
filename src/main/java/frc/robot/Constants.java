@@ -7,6 +7,8 @@ package frc.robot;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.revrobotics.CANSparkBase.IdleMode;
 
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -134,6 +136,8 @@ public final class Constants {
     public static final double kPXController = 1;
     public static final double kPYController = 1;
     public static final double kPThetaController = 1;
+
+    public static final Pose3d kIdealSpeakerPosition = new Pose3d(0,1.2,-1.3716,new Rotation3d(0,0,0));
 
     // Constraint for the motion profiled robot angle controller
     public static final TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(

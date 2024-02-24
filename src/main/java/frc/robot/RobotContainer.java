@@ -47,7 +47,7 @@ public class RobotContainer {
     TalonSRX Talon2 = new TalonSRX(2);
     TalonSRX Talon3 = new TalonSRX(3);
     TalonSRX Talon4 = new TalonSRX(4);
-
+  public String ampOrSpeaker = "";
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
@@ -57,6 +57,7 @@ public class RobotContainer {
     //Talon2.follow(Talon1);
     Talon2.setInverted(true);
     Talon4.follow(Talon3);
+    Talon4.setInverted(true);
     //Talon4.setInverted(true);
     configureButtonBindings();
 
@@ -65,11 +66,14 @@ public class RobotContainer {
         // The left stick controls translation of the robot.
         // Turning is controlled by the X axis of the right stick.
         new RunCommand(
-            () -> m_robotDrive.drive(
+            () -> {
+                m_robotDrive.Shoot(Talon1, Talon2, Talon3, Talon4, ampOrSpeaker);
+                m_robotDrive.drive(
                 -MathUtil.applyDeadband(Math.signum(m_driverController.getLeftY())*Math.pow(m_driverController.getLeftY(),OIConstants.kDriveStickPower)*OIConstants.kDriveStickMultiplier, OIConstants.kDriveDeadband),
                 -MathUtil.applyDeadband(Math.signum(m_driverController.getLeftX())*Math.pow(m_driverController.getLeftX(),OIConstants.kDriveStickPower)*OIConstants.kDriveStickMultiplier, OIConstants.kDriveDeadband),
                 -MathUtil.applyDeadband(m_driverController.getRightX()*OIConstants.kRotStickMultiplier, OIConstants.kDriveDeadband),
-                true, true),
+                true, true);
+            },
             m_robotDrive));
     
   }
@@ -91,8 +95,8 @@ public class RobotContainer {
     new JoystickButton(m_driverController, Button.kRightBumper.value)
         .whileTrue(new RunCommand(
             () -> {
-                Talon1.set(ControlMode.PercentOutput, 0.7); //bottom
-                Talon2.set(ControlMode.PercentOutput, 0.2); //top
+                Talon1.set(ControlMode.PercentOutput, 1); //bottom (amp: 0.7)
+                Talon2.set(ControlMode.PercentOutput, 1); //top (amp: 0.2)
             },
             new Subsystem[0]))
         .whileFalse(new RunCommand(
@@ -110,9 +114,17 @@ public class RobotContainer {
             new Subsystem[0]));
     new JoystickButton(m_driverController, Button.kA.value)
         .whileTrue(new RunCommand(
-            () -> m_robotDrive.ampShoot(),
-            m_robotDrive));
-    new JoystickButton(m_driverController, edu.wpi.first.wpilibj.PS4Controller.Button.kR2.value)
+            () -> {
+                m_robotDrive.startShoot();
+                ampOrSpeaker = "amp";
+            }, m_robotDrive));
+    new JoystickButton(m_driverController, Button.kX.value)
+        .whileTrue(new RunCommand(
+            () -> {
+                m_robotDrive.startShoot();
+                ampOrSpeaker = "speaker";
+            }, m_robotDrive));
+    new JoystickButton(m_driverController, Button.kStart.value)
         .whileTrue(new RunCommand(
             () -> m_robotDrive.Align(),
             m_robotDrive));

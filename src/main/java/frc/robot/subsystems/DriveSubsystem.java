@@ -16,7 +16,9 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
+import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.LimelightHelpers;
 import frc.utils.SwerveUtils;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -55,6 +57,10 @@ public class DriveSubsystem extends SubsystemBase {
   private SlewRateLimiter m_rotLimiter = new SlewRateLimiter(DriveConstants.kRotationalSlewRate);
   private double m_prevTime = WPIUtilJNI.now() * 1e-6;
 
+  private long m_lastAmpShoot;
+  private boolean m_shoot = false;
+  
+
   // Odometry class for tracking robot pose
   SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
       DriveConstants.kDriveKinematics,
@@ -70,7 +76,6 @@ public class DriveSubsystem extends SubsystemBase {
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
   }
-  public static int lastAmpShoot;
   @Override
   public void periodic() {
     // Update the odometry in the periodic block
@@ -199,18 +204,53 @@ public class DriveSubsystem extends SubsystemBase {
     m_rearLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)));
     m_rearRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
   }
-  public void ampShoot(TalonSRX bottomRoller, TalonSRX topRoller, TalonSRX belt1, TalonSRX belt2) {
-    if (System.currentTimeMillis() - lastAmpShoot < 1000) {
-      bottomRoller.set(ControlMode.PercentOutput, 0.7);
-      topRoller.set(ControlMode.PercentOutput, 0.2);
-      if (System.currentTimeMillis() - lastAmpShoot > 500) {
-        belt1.set(ControlMode.PercentOutput, 1);
-        belt2.set(ControlMode.PercentOutput, 1);
+
+  public void startShoot() {
+    if (!m_shoot) {
+      m_lastAmpShoot = System.currentTimeMillis();
+      m_shoot = true;
+    }
+  }
+
+  public void startAlign() {
+    if (!m_shoot) {
+      m_lastAmpShoot = System.currentTimeMillis();
+      m_shoot = true;
+    }
+  }
+
+  public void Shoot(TalonSRX bottomRoller, TalonSRX topRoller, TalonSRX belt1, TalonSRX belt2, String ampOrSpeaker) {
+    if (m_shoot) {
+      if (System.currentTimeMillis() - m_lastAmpShoot < 2250) {
+        bottomRoller.set(ControlMode.PercentOutput, (ampOrSpeaker.equals("amp") ? 0.7 : 1));
+        topRoller.set(ControlMode.PercentOutput, (ampOrSpeaker.equals("amp") ? 0.2 : 1));
+        if (System.currentTimeMillis() - m_lastAmpShoot > 500) {
+          belt1.set(ControlMode.PercentOutput, 1);
+          belt2.set(ControlMode.PercentOutput, 1);
+        }
+      } else {
+        bottomRoller.set(ControlMode.PercentOutput, 0);
+        topRoller.set(ControlMode.PercentOutput, 0);
+        belt1.set(ControlMode.PercentOutput, 0);
+        belt2.set(ControlMode.PercentOutput, 0);
+        m_shoot = false;
       }
     }
   }
+  private double speedAdjust(double distance){
+    return -(1 / (3*distance + 1)) + 1;
+  }
   public void Align() {
     System.out.println("align");
+    double tx = LimelightHelpers.getBotPose3d_TargetSpace("").getX()-AutoConstants.kIdealSpeakerPosition.getX();
+    double tz = LimelightHelpers.getBotPose3d_TargetSpace("").getZ()-AutoConstants.kIdealSpeakerPosition.getZ();
+    double theta = Math.atan2(tz,tx) + (Math.PI/2);
+    System.out.println(theta);
+    m_frontLeft.setDesiredState(new SwerveModuleState(0.3*speedAdjust(Math.hypot(tx, tz)), Rotation2d.fromRadians(theta)));
+    m_frontRight.setDesiredState(new SwerveModuleState(0.3*speedAdjust(Math.hypot(tx, tz)), Rotation2d.fromRadians(theta)));
+    m_rearLeft.setDesiredState(new SwerveModuleState(0.3*speedAdjust(Math.hypot(tx, tz)), Rotation2d.fromRadians(theta)));
+    m_rearRight.setDesiredState(new SwerveModuleState(0.3*speedAdjust(Math.hypot(tx, tz)), Rotation2d.fromRadians(theta)));
+    
   }
   /**
    * Sets the swerve ModuleStates.
