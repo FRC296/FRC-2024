@@ -126,7 +126,7 @@ public class RobotContainer {
             }, m_robotDrive));
     new JoystickButton(m_driverController, Button.kStart.value)
         .whileTrue(new RunCommand(
-            () -> m_robotDrive.Align(),
+            () -> m_robotDrive.Align2(),
             m_robotDrive));
     
   }

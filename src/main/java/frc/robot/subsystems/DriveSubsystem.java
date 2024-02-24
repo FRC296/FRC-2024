@@ -215,7 +215,16 @@ public class DriveSubsystem extends SubsystemBase {
     }
   }
 
-
+  public void rotateToDegrees(double angle){    
+    var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(    
+    ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, -speedAdjust(SwerveUtils.AngleDifference(Math.toRadians(angle), Math.toRadians(m_gyro.getAngle()))), Rotation2d.fromDegrees(m_gyro.getAngle())));
+    SwerveDriveKinematics.desaturateWheelSpeeds(
+        swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
+    m_frontLeft.setDesiredState(swerveModuleStates[0]);
+    m_frontRight.setDesiredState(swerveModuleStates[1]);
+    m_rearLeft.setDesiredState(swerveModuleStates[2]);
+    m_rearRight.setDesiredState(swerveModuleStates[3]);
+  }
 
   public void Shoot(TalonSRX bottomRoller, TalonSRX topRoller, TalonSRX belt1, TalonSRX belt2, String ampOrSpeaker) {
     if (m_shoot) {
@@ -243,7 +252,6 @@ public class DriveSubsystem extends SubsystemBase {
     double tz = LimelightHelpers.getBotPose3d_TargetSpace("").getZ()-AutoConstants.kIdealSpeakerPosition.getZ();
     double ID = LimelightHelpers.getFiducialID("");
     double theta = Math.atan2(tz,tx) + (Math.PI/2);
-    System.out.println(ID);
     double distance = Math.hypot(tx, tz);
     if (ID == 4 || ID == 7) {
       if (distance > 0.1 && alignCounter < 5){
@@ -255,6 +263,36 @@ public class DriveSubsystem extends SubsystemBase {
         setX();
         if (alignCounter >= 5) {
           startShoot();
+        } else {
+          System.out.println("aligned");
+          alignCounter++;
+        }
+      }
+    }
+  }
+  public void Align2() {
+    double tx = LimelightHelpers.getBotPose3d_TargetSpace("").getX();
+    double tz = LimelightHelpers.getBotPose3d_TargetSpace("").getZ();
+    double ID = LimelightHelpers.getFiducialID("");
+    double theta = Math.atan2(tz,tx) + (Math.PI/2);
+    double distance = Math.hypot(tx, tz);
+    double desiredDistance = -1.3716;
+    double desiredZ = desiredDistance * Math.cos(theta);
+    double desiredX = desiredDistance * Math.sin(theta);
+    if (ID == 4 || ID == 7) {
+      if (SwerveUtils.AngleDifference(theta+(Math.PI/2), Math.toRadians(m_gyro.getAngle())) > 0.1) {
+        rotateToDegrees(Math.toDegrees(theta+(Math.PI/2)));
+        System.out.println(SwerveUtils.AngleDifference(theta, Math.toRadians(m_gyro.getAngle())));
+      } else 
+      if (distance > 0.1 && alignCounter < 5){
+        m_frontLeft.setDesiredState(new SwerveModuleState(0.6*speedAdjust(distance+desiredDistance), Rotation2d.fromRadians(theta)));
+        m_frontRight.setDesiredState(new SwerveModuleState(0.6*speedAdjust(distance+desiredDistance), Rotation2d.fromRadians(theta)));
+        m_rearLeft.setDesiredState(new SwerveModuleState(0.6*speedAdjust(distance+desiredDistance), Rotation2d.fromRadians(theta)));
+        m_rearRight.setDesiredState(new SwerveModuleState(0.6*speedAdjust(distance+desiredDistance), Rotation2d.fromRadians(theta)));
+      } else {
+        setX();
+        if (alignCounter >= 5) {
+          //startShoot();
         } else {
           System.out.println("aligned");
           alignCounter++;
