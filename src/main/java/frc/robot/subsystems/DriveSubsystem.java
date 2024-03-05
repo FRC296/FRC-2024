@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -16,13 +14,9 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
-import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.LimelightHelpers;
-import frc.robot.RobotContainer;
 import frc.utils.SwerveUtils;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 public class DriveSubsystem extends SubsystemBase {
   // Create MAXSwerveModules
@@ -57,12 +51,6 @@ public class DriveSubsystem extends SubsystemBase {
   private SlewRateLimiter m_magLimiter = new SlewRateLimiter(DriveConstants.kMagnitudeSlewRate);
   private SlewRateLimiter m_rotLimiter = new SlewRateLimiter(DriveConstants.kRotationalSlewRate);
   private double m_prevTime = WPIUtilJNI.now() * 1e-6;
-
-  private long m_lastAmpShoot;
-  private boolean m_shoot = false;
-  
-  private int alignCounter;
-  
 
   // Odometry class for tracking robot pose
   SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
@@ -208,15 +196,13 @@ public class DriveSubsystem extends SubsystemBase {
     m_rearRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
   }
 
-  public void startShoot() {
-    if (!m_shoot) {
-      m_lastAmpShoot = System.currentTimeMillis();
-      m_shoot = true;
-    }
-  }
 
+  /**
+   * Sets the wheels into an X formation to prevent movement.
+   * @param angle The angle to rotate to
+   */
   public void rotateToDegrees(double angle){    
-    var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(    
+    SwerveModuleState[] swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(    
     ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, -speedAdjust(SwerveUtils.AngleDifference(Math.toRadians(angle), Math.toRadians(m_gyro.getAngle()))), Rotation2d.fromDegrees(m_gyro.getAngle())));
     SwerveDriveKinematics.desaturateWheelSpeeds(
         swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
@@ -226,80 +212,14 @@ public class DriveSubsystem extends SubsystemBase {
     m_rearRight.setDesiredState(swerveModuleStates[3]);
   }
 
-  public void Shoot(TalonSRX bottomRoller, TalonSRX topRoller, TalonSRX belt1, TalonSRX belt2, String ampOrSpeaker) {
-    if (m_shoot) {
-      if (System.currentTimeMillis() - m_lastAmpShoot < 2250) {
-        bottomRoller.set(ControlMode.PercentOutput, (ampOrSpeaker.equals("amp") ? 0.7 : 1));
-        topRoller.set(ControlMode.PercentOutput, (ampOrSpeaker.equals("amp") ? 0.2 : 1));
-        if (System.currentTimeMillis() - m_lastAmpShoot > 500) {
-          belt1.set(ControlMode.PercentOutput, 1);
-          belt2.set(ControlMode.PercentOutput, 1);
-        }
-      } else {
-        bottomRoller.set(ControlMode.PercentOutput, 0);
-        topRoller.set(ControlMode.PercentOutput, 0);
-        belt1.set(ControlMode.PercentOutput, 0);
-        belt2.set(ControlMode.PercentOutput, 0);
-        m_shoot = false;
-      }
-    }
-  }
+  /**
+   * Adjusts the speed of the robot based on the distance to the target (rotation).
+   * @param distance The distance to the target
+   */
   private double speedAdjust(double distance){
     return -(1 / (3*distance + 1)) + 1;
   }
-  public void Align() {
-    double tx = LimelightHelpers.getBotPose3d_TargetSpace("").getX()-AutoConstants.kIdealSpeakerPosition.getX();
-    double tz = LimelightHelpers.getBotPose3d_TargetSpace("").getZ()-AutoConstants.kIdealSpeakerPosition.getZ();
-    double ID = LimelightHelpers.getFiducialID("");
-    double theta = Math.atan2(tz,tx) + (Math.PI/2);
-    double distance = Math.hypot(tx, tz);
-    if (ID == 4 || ID == 7) {
-      if (distance > 0.1 && alignCounter < 5){
-        m_frontLeft.setDesiredState(new SwerveModuleState(0.6*speedAdjust(distance), Rotation2d.fromRadians(theta)));
-        m_frontRight.setDesiredState(new SwerveModuleState(0.6*speedAdjust(distance), Rotation2d.fromRadians(theta)));
-        m_rearLeft.setDesiredState(new SwerveModuleState(0.6*speedAdjust(distance), Rotation2d.fromRadians(theta)));
-        m_rearRight.setDesiredState(new SwerveModuleState(0.6*speedAdjust(distance), Rotation2d.fromRadians(theta)));
-      } else {
-        setX();
-        if (alignCounter >= 5) {
-          startShoot();
-        } else {
-          System.out.println("aligned");
-          alignCounter++;
-        }
-      }
-    }
-  }
-  public void Align2() {
-    double tx = LimelightHelpers.getBotPose3d_TargetSpace("").getX();
-    double tz = LimelightHelpers.getBotPose3d_TargetSpace("").getZ();
-    double ID = LimelightHelpers.getFiducialID("");
-    double theta = Math.atan2(tz,tx) + (Math.PI/2);
-    double distance = Math.hypot(tx, tz);
-    double desiredDistance = -1.3716;
-    double desiredZ = desiredDistance * Math.cos(theta);
-    double desiredX = desiredDistance * Math.sin(theta);
-    if (ID == 4 || ID == 7) {
-      if (SwerveUtils.AngleDifference(theta+(Math.PI/2), Math.toRadians(m_gyro.getAngle())) > 0.1) {
-        rotateToDegrees(Math.toDegrees(theta+(Math.PI/2)));
-        System.out.println(SwerveUtils.AngleDifference(theta, Math.toRadians(m_gyro.getAngle())));
-      } else 
-      if (distance > 0.1 && alignCounter < 5){
-        m_frontLeft.setDesiredState(new SwerveModuleState(0.6*speedAdjust(distance+desiredDistance), Rotation2d.fromRadians(theta)));
-        m_frontRight.setDesiredState(new SwerveModuleState(0.6*speedAdjust(distance+desiredDistance), Rotation2d.fromRadians(theta)));
-        m_rearLeft.setDesiredState(new SwerveModuleState(0.6*speedAdjust(distance+desiredDistance), Rotation2d.fromRadians(theta)));
-        m_rearRight.setDesiredState(new SwerveModuleState(0.6*speedAdjust(distance+desiredDistance), Rotation2d.fromRadians(theta)));
-      } else {
-        setX();
-        if (alignCounter >= 5) {
-          //startShoot();
-        } else {
-          System.out.println("aligned");
-          alignCounter++;
-        }
-      }
-    }
-  }
+  
   /**
    * Sets the swerve ModuleStates.
    *
@@ -344,4 +264,8 @@ public class DriveSubsystem extends SubsystemBase {
   public double getTurnRate() {
     return m_gyro.getRate() * (DriveConstants.kGyroReversed ? -1.0 : 1.0);
   }
+public void alignToTarget() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'alignToTarget'");
+}
 }
