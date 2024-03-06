@@ -109,6 +109,14 @@ public class RobotContainer {
             },
             m_robotDrive));
     
+    // The EESubsystem will do nothing by default
+    m_eeSubsystem.setDefaultCommand(
+        new RunCommand(
+            () -> {
+                m_eeSubsystem.stop();
+            },
+            m_eeSubsystem));
+    
     // Build an auto chooser. This will use Commands.none() as the default option.
     autoChooser = AutoBuilder.buildAutoChooser();
 
@@ -140,19 +148,18 @@ public class RobotContainer {
             m_eeSubsystem));
         BButton.whileFalse(new RunCommand(
             () -> {
-                m_eeSubsystem.stop();
                 fieldRelative = true;
             },
             m_eeSubsystem));
 
-    // On A hold, align to target and run the shoot command on the EESubsystem
+    // On A hold, align to target and run the shoot command when a is released
     JoystickButton AButton = new JoystickButton(m_driverController, Button.kA.value);
         AButton.whileTrue(new RunCommand(
             () -> {
-                m_eeSubsystem.shoot();
                 m_robotDrive.alignToTarget();
             },
             m_eeSubsystem));
+        AButton.onFalse(m_eeSubsystem.simpleShotCommand);
 
     
   }

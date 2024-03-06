@@ -3,7 +3,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
-import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class EESubsystem extends SubsystemBase {
@@ -14,7 +14,11 @@ public class EESubsystem extends SubsystemBase {
     TalonSRX m_bottomShooter = new TalonSRX(1);
 
     //TODO: Add a sensor to detect if we have a note
-    Boolean hasNote = true;
+    private Boolean hasNote = true;
+
+    public Boolean getHasNote() {
+        return hasNote;
+    }
 
     public EESubsystem() {
         m_topShooter.setInverted(true);
@@ -25,27 +29,26 @@ public class EESubsystem extends SubsystemBase {
         m_topBelt.set(ControlMode.PercentOutput, 1);
     }
 
-    public void shoot() {
-        // TODO spin up the shooter until fire is pressed
-        hasNote = false;
-    }
-
     public void stop() {
         m_topBelt.set(ControlMode.PercentOutput, 0);
         m_topShooter.set(ControlMode.PercentOutput, 0);
         m_bottomShooter.set(ControlMode.PercentOutput, 0);
     }
 
-    public RunCommand intakeCommand = new RunCommand(() -> {
+    public InstantCommand intakeCommand = new InstantCommand(() -> {
         while(!hasNote) {
             intake();
         }
     },
     this);
 
-    public RunCommand aimedShotCommand = new RunCommand(() -> {
+    public InstantCommand aimedShotCommand = new InstantCommand(() -> {
         //TODO: Aim and fire the shooter
     },
     this);
     
+    public InstantCommand simpleShotCommand = new InstantCommand(() -> {
+        //TODO: Fire the shooter
+    },
+    this);
 }
