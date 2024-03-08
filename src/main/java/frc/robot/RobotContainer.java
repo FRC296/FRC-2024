@@ -30,8 +30,8 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
  */
 public class RobotContainer {
   // The robot's subsystems
-  private final DriveSubsystem m_robotDrive = new DriveSubsystem();
-  private final EESubsystem m_eeSubsystem = new EESubsystem();
+  private final DriveSubsystem m_robotDrive;
+  private final EESubsystem m_eeSubsystem;
 
     // The driver's controller
     XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -51,9 +51,13 @@ public class RobotContainer {
    */
   public RobotContainer() {
 
+    // Create the subsystems
+    m_robotDrive = new DriveSubsystem(m_driverController);
+    m_eeSubsystem = new EESubsystem(m_driverController);
+
     // Register Named Commands
     NamedCommands.registerCommand("intake", m_eeSubsystem.intakeCommand);
-    NamedCommands.registerCommand("aimedShot", m_eeSubsystem.aimedShotCommand);
+    NamedCommands.registerCommand("aimedShot", (m_robotDrive.alignToTargetCommand.alongWith(m_eeSubsystem.revUpCommand)).andThen(m_eeSubsystem.quickShotCommand));
 
     field = new Field2d();
         SmartDashboard.putData("Field", field);
@@ -109,13 +113,8 @@ public class RobotContainer {
             },
             m_robotDrive));
     
-    // The EESubsystem will do nothing by default
-    m_eeSubsystem.setDefaultCommand(
-        new RunCommand(
-            () -> {
-                m_eeSubsystem.stop();
-            },
-            m_eeSubsystem));
+    // Set the default command for the EESubsystem
+    m_eeSubsystem.setDefaultCommand(m_eeSubsystem.stopCommand);
     
     // Build an auto chooser. This will use Commands.none() as the default option.
     autoChooser = AutoBuilder.buildAutoChooser();
@@ -152,16 +151,31 @@ public class RobotContainer {
             },
             m_eeSubsystem));
 
-    // On A hold, align to target and run the shoot command when a is released
+    // On A hold, align to the target
     JoystickButton AButton = new JoystickButton(m_driverController, Button.kA.value);
         AButton.whileTrue(new RunCommand(
             () -> {
                 m_robotDrive.alignToTarget();
+                m_eeSubsystem.revUp();
             },
             m_eeSubsystem));
-        AButton.onFalse(m_eeSubsystem.simpleShotCommand);
+        
+    // When run bumper is pressed, run the simple shot command
+    JoystickButton rightBumper = new JoystickButton(m_driverController, Button.kRightBumper.value);
+        rightBumper.onTrue(m_eeSubsystem.simpleShotCommand);
 
-    
+    // When left bumper is pressed, run the amp shot command
+    JoystickButton leftBumper = new JoystickButton(m_driverController, Button.kLeftBumper.value);
+        leftBumper.onTrue(m_eeSubsystem.ampShotCommand);
+
+    // When the back button is pressed, zero the gyro
+    JoystickButton backButton = new JoystickButton(m_driverController, Button.kBack.value);
+        backButton.onTrue(new RunCommand(
+            () -> {
+                m_robotDrive.zeroHeading();
+            },
+            m_robotDrive));
+
   }
 
   /**

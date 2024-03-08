@@ -20,9 +20,15 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import frc.robot.Constants;
+import frc.robot.LimelightHelpers;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.utils.SwerveUtils;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
@@ -50,6 +56,9 @@ public class DriveSubsystem extends SubsystemBase {
   // The gyro sensor
   private final ADIS16470_IMU m_gyro = new ADIS16470_IMU();
 
+  // Xbox controller for haptics
+  XboxController controller;
+
   // Slew rate filter variables for controlling lateral acceleration
   private double m_currentRotation = 0.0;
   private double m_currentTranslationDir = 0.0;
@@ -72,7 +81,10 @@ public class DriveSubsystem extends SubsystemBase {
 
   
   /** Creates a new DriveSubsystem. */
-  public DriveSubsystem() {
+  public DriveSubsystem(XboxController controller) {
+
+    this.controller = controller;
+
     // Configure AutoBuilder last
     AutoBuilder.configureHolonomic(
             this::getPose, // Robot pose supplier
@@ -248,7 +260,7 @@ public class DriveSubsystem extends SubsystemBase {
 
 
   /**
-   * Sets the wheels into an X formation to prevent movement.
+   * Rotates the robot to a specific angle.
    * @param angle The angle to rotate to
    */
   public void rotateToDegrees(double angle){    
@@ -263,11 +275,27 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   /**
-   * Adjusts the speed of the robot based on the distance to the target (rotation).
-   * @param distance The distance to the target
+   * Adjusts the speed of the robot based on the angle difference.
+   * @param angleDifference The angle difference to adjust the speed for
+   * @return The adjusted speed
    */
   private double speedAdjust(double distance){
     return -(1 / (3*distance + 1)) + 1;
+  }
+
+  /**
+   * Rotates the robot at a specific speed.
+   * @param speed The speed to rotate at
+   */
+  public void rotate(double speed){
+    SwerveModuleState[] swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(    
+    ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, -speed, Rotation2d.fromDegrees(m_gyro.getAngle())));
+    SwerveDriveKinematics.desaturateWheelSpeeds(
+        swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
+    m_frontLeft.setDesiredState(swerveModuleStates[0]);
+    m_frontRight.setDesiredState(swerveModuleStates[1]);
+    m_rearLeft.setDesiredState(swerveModuleStates[2]);
+    m_rearRight.setDesiredState(swerveModuleStates[3]);
   }
   
   /**
@@ -332,8 +360,45 @@ public class DriveSubsystem extends SubsystemBase {
    * Aligns the robot to a target using the limelight.
    */
   public void alignToTarget() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'alignToTarget'");
+    double tx = LimelightHelpers.getTX("");
+    double id = LimelightHelpers.getFiducialID("");
+
+    if(!(id == 4 || id == 7) && Math.abs(tx) > 1){
+      if (!(id == 4 || id == 7)) {
+        rotateToDegrees(0);
+      } else {
+        double targetingAngularVelocity = 0.1 * tx;
+        targetingAngularVelocity *= Constants.DriveConstants.kMaxAngularSpeed;
+        targetingAngularVelocity *= -1.0; 
+        rotate(targetingAngularVelocity);
+      }
+    }
+
+    controller.setRumble(RumbleType.kRightRumble, 1);
   }
+
+  /**
+   * Aligns the robot to a target using the limelight.
+   */
+  public InstantCommand alignToTargetCommand = new InstantCommand(() -> {
+    double tx = LimelightHelpers.getTX("");
+    double id = LimelightHelpers.getFiducialID("");
+
+    while(!(id == 4 || id == 7) && Math.abs(tx) > 1){
+      if (!(id == 4 || id == 7)) {
+        rotateToDegrees(0);
+      } else {
+        double targetingAngularVelocity = 0.1 * tx;
+        targetingAngularVelocity *= Constants.DriveConstants.kMaxAngularSpeed;
+        targetingAngularVelocity *= -1.0; 
+        rotate(targetingAngularVelocity);
+      }
+      tx = LimelightHelpers.getTX("");
+      id = LimelightHelpers.getFiducialID("");
+    }
+
+    controller.setRumble(RumbleType.kRightRumble, 1);
+
+  }, this);
 
 }
