@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.interfaces.Gyro;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
 import frc.robot.Constants.AutoConstants;
@@ -126,6 +127,10 @@ public class DriveSubsystem extends SubsystemBase {
             m_rearRight.getPosition()
         });
   }
+
+  public InstantCommand printPose = new InstantCommand(() -> {
+    System.out.println(m_gyro.getAngle());
+  }, this);
 
   /**
    * Returns the currently-estimated pose of the robot.
@@ -239,13 +244,11 @@ public class DriveSubsystem extends SubsystemBase {
    * @param chassisSpeeds The speeds to drive the robot at
    */
   public void driveRobotRelative(ChassisSpeeds chassisSpeeds) {
-    var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(chassisSpeeds);
-    SwerveDriveKinematics.desaturateWheelSpeeds(
-        swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
-    m_frontLeft.setDesiredState(swerveModuleStates[0]);
-    m_frontRight.setDesiredState(swerveModuleStates[1]);
-    m_rearLeft.setDesiredState(swerveModuleStates[2]);
-    m_rearRight.setDesiredState(swerveModuleStates[3]);
+    double xSpeed = chassisSpeeds.vxMetersPerSecond;
+    double ySpeed = chassisSpeeds.vyMetersPerSecond;
+    double rot = chassisSpeeds.omegaRadiansPerSecond;
+    this.drive(xSpeed, 
+    ySpeed, rot, false, false);
   }
 
   /**
@@ -258,30 +261,42 @@ public class DriveSubsystem extends SubsystemBase {
     m_rearRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
   }
 
-
   /**
-   * Rotates the robot to a specific angle.
-   * @param angle The angle to rotate to
+   * Rotates the robot to a specific angle, taking the shortest path.
+   * Uses a proportional controller to adjust the rotation speed based on the angle difference.
+   * @param targetAngle The angle to rotate to (in degrees)
    */
-  public void rotateToDegrees(double angle){    
-    SwerveModuleState[] swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(    
-    ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, -speedAdjust(SwerveUtils.AngleDifference(Math.toRadians(angle), Math.toRadians(m_gyro.getAngle()))), Rotation2d.fromDegrees(m_gyro.getAngle())));
-    SwerveDriveKinematics.desaturateWheelSpeeds(
-        swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
-    m_frontLeft.setDesiredState(swerveModuleStates[0]);
-    m_frontRight.setDesiredState(swerveModuleStates[1]);
-    m_rearLeft.setDesiredState(swerveModuleStates[2]);
-    m_rearRight.setDesiredState(swerveModuleStates[3]);
-  }
+  public void rotateToDegrees(double _targetAngle_) {
+    // Proportional controller constants
+    double kP = 0.08;
 
-  /**
-   * Adjusts the speed of the robot based on the angle difference.
-   * @param angleDifference The angle difference to adjust the speed for
-   * @return The adjusted speed
-   */
-  private double speedAdjust(double distance){
-    return -(1 / (3*distance + 1)) + 1;
-  }
+    double currentAngle = normalizeAngle(m_gyro.getAngle());
+
+    // Wrap the target angle to the range of -180 to 180 degrees
+    double targetAngle = normalizeAngle(_targetAngle_);
+
+    double angleDifference = targetAngle - currentAngle;
+
+    // Ensure the angle difference is within the range of -180 to 180 degrees
+    angleDifference = normalizeAngle(angleDifference);
+
+    // Calculate the rotation speed using the proportional controller
+    double rotationSpeed = kP * angleDifference;
+
+    rotate(rotationSpeed);
+
+}
+
+private double normalizeAngle(double angle) {
+    double normalizedAngle = angle;
+    while (normalizedAngle > 180) {
+        normalizedAngle -= 360;
+    }
+    while (normalizedAngle < -180) {
+        normalizedAngle += 360;
+    }
+    return normalizedAngle;
+}
 
   /**
    * Rotates the robot at a specific speed.
@@ -289,7 +304,7 @@ public class DriveSubsystem extends SubsystemBase {
    */
   public void rotate(double speed){
     SwerveModuleState[] swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(    
-    ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, -speed, Rotation2d.fromDegrees(m_gyro.getAngle())));
+    ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, speed, Rotation2d.fromDegrees(m_gyro.getAngle())));
     SwerveDriveKinematics.desaturateWheelSpeeds(
         swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
     m_frontLeft.setDesiredState(swerveModuleStates[0]);
@@ -363,18 +378,19 @@ public class DriveSubsystem extends SubsystemBase {
     double tx = LimelightHelpers.getTX("");
     double id = LimelightHelpers.getFiducialID("");
 
-    if(!(id == 4 || id == 7) && Math.abs(tx) > 1){
+    if(!(id == 4 || id == 7) || Math.abs(tx) > 1){
       if (!(id == 4 || id == 7)) {
         rotateToDegrees(0);
       } else {
-        double targetingAngularVelocity = 0.1 * tx;
-        targetingAngularVelocity *= Constants.DriveConstants.kMaxAngularSpeed;
-        targetingAngularVelocity *= -1.0; 
-        rotate(targetingAngularVelocity);
+        double targetingAngularVelocity = 0.06 * tx;
+        // targetingAngularVelocity *= Constants.DriveConstants.kMaxAngularSpeed;
+        rotate(-targetingAngularVelocity);
       }
     }
 
-    controller.setRumble(RumbleType.kRightRumble, 1);
+    if (Math.abs(tx) < 2 && (id == 4 || id == 7)){
+      controller.setRumble(RumbleType.kRightRumble, 1);
+    }
   }
 
   /**
@@ -384,14 +400,13 @@ public class DriveSubsystem extends SubsystemBase {
     double tx = LimelightHelpers.getTX("");
     double id = LimelightHelpers.getFiducialID("");
 
-    while(!(id == 4 || id == 7) && Math.abs(tx) > 1){
+    while(!(id == 4 || id == 7) || Math.abs(tx) > 1){
       if (!(id == 4 || id == 7)) {
         rotateToDegrees(0);
       } else {
-        double targetingAngularVelocity = 0.1 * tx;
-        targetingAngularVelocity *= Constants.DriveConstants.kMaxAngularSpeed;
-        targetingAngularVelocity *= -1.0; 
-        rotate(targetingAngularVelocity);
+        double targetingAngularVelocity = 0.06 * tx;
+        // targetingAngularVelocity *= Constants.DriveConstants.kMaxAngularSpeed;
+        rotate(-targetingAngularVelocity);
       }
       tx = LimelightHelpers.getTX("");
       id = LimelightHelpers.getFiducialID("");
@@ -399,6 +414,10 @@ public class DriveSubsystem extends SubsystemBase {
 
     controller.setRumble(RumbleType.kRightRumble, 1);
 
+  }, this);
+
+  public InstantCommand setXCommand = new InstantCommand(() -> {
+    setX();
   }, this);
 
 }

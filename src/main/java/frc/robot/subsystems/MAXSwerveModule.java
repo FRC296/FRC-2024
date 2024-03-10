@@ -109,7 +109,7 @@ public class MAXSwerveModule {
     public SwerveModuleState getState() {
         // Apply chassis angular offset to the encoder position to get the position
         // relative to the chassis.
-        return new SwerveModuleState(m_drivingTalonFX.getSelectedSensorVelocity(),
+        return new SwerveModuleState(m_drivingTalonFX.getSelectedSensorVelocity() / 2048 * ModuleConstants.kDrivingEncoderVelocityFactor,
                 new Rotation2d(m_turningEncoder.getPosition() - m_chassisAngularOffset));
     }
 
@@ -122,7 +122,7 @@ public class MAXSwerveModule {
         // Apply chassis angular offset to the encoder position to get the position
         // relative to the chassis.
         return new SwerveModulePosition(
-                m_drivingTalonFX.getSelectedSensorPosition(),
+                m_drivingTalonFX.getSelectedSensorPosition() / 2048 * ModuleConstants.kDrivingEncoderPositionFactor,
                 new Rotation2d(m_turningEncoder.getPosition() - m_chassisAngularOffset));
     }
 

@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class EESubsystem extends SubsystemBase {
@@ -27,6 +28,7 @@ public class EESubsystem extends SubsystemBase {
         return hasNote;
     }
 
+    // Constructor
     public EESubsystem(XboxController controller) {
         m_topShooter.setInverted(true);
         m_bottomBelt.follow(m_topBelt);
@@ -34,6 +36,7 @@ public class EESubsystem extends SubsystemBase {
         this.controller = controller;
     }
 
+    // Intake the note
     public void intake() {
         if(!hasNote) {
             m_topBelt.set(ControlMode.PercentOutput, 1);
@@ -46,6 +49,7 @@ public class EESubsystem extends SubsystemBase {
         }
     }
 
+    // Intake as a command
     public InstantCommand intakeCommand = new InstantCommand(() -> {
         while(!hasNote) {
             intake();
@@ -54,59 +58,76 @@ public class EESubsystem extends SubsystemBase {
     },
     this);
 
+    // Spin up the shooter
     public void revUp() {
         m_topShooter.set(ControlMode.PercentOutput, 1);
         m_bottomShooter.set(ControlMode.PercentOutput, 1);
     }
 
+    // Spin up the shooter as a command
     public InstantCommand revUpCommand = new InstantCommand(() -> {
-        m_topShooter.set(ControlMode.PercentOutput, 1);
-        m_bottomShooter.set(ControlMode.PercentOutput, 1);
+        this.revUp();
     },
     this);
 
+    // Shoot at the speaker (without spin up time)
     public InstantCommand quickShotCommand = new InstantCommand(() -> {
         m_topBelt.set(ControlMode.PercentOutput, 1);
         m_topShooter.set(ControlMode.PercentOutput, 1);
         m_bottomShooter.set(ControlMode.PercentOutput, 1);
-        Timer.delay(0.5);
+        Timer.delay(0.65);
         m_topBelt.set(ControlMode.PercentOutput, 0);
         m_bottomShooter.set(ControlMode.PercentOutput, 0);
         m_topShooter.set(ControlMode.PercentOutput, 0);
+        hasNote = false;
     },
     this);
     
+    // Shoot at the speaker (with spin up time)
     public InstantCommand simpleShotCommand = new InstantCommand(() -> {    
         m_topShooter.set(ControlMode.PercentOutput, 1);
         m_bottomShooter.set(ControlMode.PercentOutput, 1);
         Timer.delay(0.5);
         m_topBelt.set(ControlMode.PercentOutput, 1);
-        Timer.delay(0.5);
+        Timer.delay(0.65);
         m_topBelt.set(ControlMode.PercentOutput, 0);
         m_bottomShooter.set(ControlMode.PercentOutput, 0);
         m_topShooter.set(ControlMode.PercentOutput, 0);
+        hasNote = false;
     },
     this);
 
+    // Shoot at the amp
     public InstantCommand ampShotCommand = new InstantCommand(() -> {
         m_topShooter.set(ControlMode.PercentOutput, 0.2);
         m_bottomShooter.set(ControlMode.PercentOutput, 0.7);
         Timer.delay(0.25);
         m_topBelt.set(ControlMode.PercentOutput, 1);
+        Timer.delay(0.65);
+        m_topBelt.set(ControlMode.PercentOutput, 0);
+        m_bottomShooter.set(ControlMode.PercentOutput, 0);
+        m_topShooter.set(ControlMode.PercentOutput, 0);
+        hasNote = false;
+    },
+    this);
+
+    // Stop the shooter and belt
+    public RunCommand stopCommand = new RunCommand(() -> {
+        m_topBelt.set(ControlMode.PercentOutput, 0);
+        m_bottomShooter.set(ControlMode.PercentOutput, 0);
+        m_topShooter.set(ControlMode.PercentOutput, 0);
+    },
+    this);
+
+    // Reverse the belt to remove jams
+    public InstantCommand reverseCommand = new InstantCommand(() -> {
+        m_topBelt.set(ControlMode.PercentOutput, -1);
+        m_topShooter.set(ControlMode.PercentOutput, -1);
+        m_bottomShooter.set(ControlMode.PercentOutput, -1);
         Timer.delay(0.5);
         m_topBelt.set(ControlMode.PercentOutput, 0);
         m_bottomShooter.set(ControlMode.PercentOutput, 0);
         m_topShooter.set(ControlMode.PercentOutput, 0);
     },
     this);
-
-    public InstantCommand stopCommand = new InstantCommand(() -> {
-        m_topBelt.set(ControlMode.PercentOutput, 0);
-        m_bottomShooter.set(ControlMode.PercentOutput, 0);
-        m_topShooter.set(ControlMode.PercentOutput, 0);
-        controller.setRumble(RumbleType.kLeftRumble, 0);
-        controller.setRumble(RumbleType.kRightRumble, 0);
-    },
-    this);
-
 }

@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.fasterxml.jackson.core.sym.Name;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.util.PathPlannerLogging;
@@ -18,6 +19,7 @@ import frc.robot.Constants.OIConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.EESubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
@@ -51,13 +53,21 @@ public class RobotContainer {
    */
   public RobotContainer() {
 
-    // Create the subsystems
+    // Subsystem instantiation
     m_robotDrive = new DriveSubsystem(m_driverController);
     m_eeSubsystem = new EESubsystem(m_driverController);
 
     // Register Named Commands
     NamedCommands.registerCommand("intake", m_eeSubsystem.intakeCommand);
     NamedCommands.registerCommand("aimedShot", (m_robotDrive.alignToTargetCommand.alongWith(m_eeSubsystem.revUpCommand)).andThen(m_eeSubsystem.quickShotCommand));
+    NamedCommands.registerCommand("SetX", m_robotDrive.setXCommand);
+    NamedCommands.registerCommand("revUp", m_eeSubsystem.revUpCommand);
+    NamedCommands.registerCommand("simpleShot", m_eeSubsystem.simpleShotCommand);
+    NamedCommands.registerCommand("ampShot", m_eeSubsystem.ampShotCommand);
+    NamedCommands.registerCommand("quickShot", m_eeSubsystem.quickShotCommand);
+    NamedCommands.registerCommand("align", m_robotDrive.alignToTargetCommand);
+    NamedCommands.registerCommand("stopEE", m_eeSubsystem.stopCommand);
+
 
     field = new Field2d();
         SmartDashboard.putData("Field", field);
@@ -79,6 +89,8 @@ public class RobotContainer {
             // Do whatever you want with the poses here
             field.getObject("path").setPoses(poses);
         });
+    
+    SmartDashboard.putData("Field", field);
 
     // Configure the button bindings
     configureButtonBindings();
@@ -121,7 +133,6 @@ public class RobotContainer {
 
     // Another option that allows you to specify the default auto by its name
     // autoChooser = AutoBuilder.buildAutoChooser("My Default Auto");
-
     SmartDashboard.putData("Auto Chooser", autoChooser);
     
   }
@@ -148,8 +159,8 @@ public class RobotContainer {
         BButton.whileFalse(new RunCommand(
             () -> {
                 fieldRelative = true;
-            },
-            m_eeSubsystem));
+            }));
+        BButton.onFalse(m_eeSubsystem.stopCommand);
 
     // On A hold, align to the target
     JoystickButton AButton = new JoystickButton(m_driverController, Button.kA.value);
@@ -158,23 +169,29 @@ public class RobotContainer {
                 m_robotDrive.alignToTarget();
                 m_eeSubsystem.revUp();
             },
-            m_eeSubsystem));
+            m_eeSubsystem,
+            m_robotDrive));
         
     // When run bumper is pressed, run the simple shot command
     JoystickButton rightBumper = new JoystickButton(m_driverController, Button.kRightBumper.value);
         rightBumper.onTrue(m_eeSubsystem.simpleShotCommand);
+        rightBumper.onTrue(m_robotDrive.setXCommand);
 
     // When left bumper is pressed, run the amp shot command
     JoystickButton leftBumper = new JoystickButton(m_driverController, Button.kLeftBumper.value);
         leftBumper.onTrue(m_eeSubsystem.ampShotCommand);
+        leftBumper.onTrue(m_robotDrive.setXCommand);
 
     // When the back button is pressed, zero the gyro
     JoystickButton backButton = new JoystickButton(m_driverController, Button.kBack.value);
-        backButton.onTrue(new RunCommand(
+        backButton.onTrue(new InstantCommand(
             () -> {
                 m_robotDrive.zeroHeading();
             },
             m_robotDrive));
+
+    JoystickButton startButton = new JoystickButton(m_driverController, Button.kStart.value);
+        startButton.onTrue(m_eeSubsystem.reverseCommand);
 
   }
 
@@ -184,6 +201,9 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-        return autoChooser.getSelected();
+        System.out.println("Auto selected:" + autoChooser.getSelected());
+        Command autoCommand = autoChooser.getSelected();
+        autoCommand.addRequirements(m_robotDrive, m_eeSubsystem);
+        return autoCommand;
     }
 }
