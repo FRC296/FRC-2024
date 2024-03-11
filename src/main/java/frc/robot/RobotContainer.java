@@ -68,9 +68,14 @@ public class RobotContainer {
     NamedCommands.registerCommand("align", m_robotDrive.alignToTargetCommand);
     NamedCommands.registerCommand("stopEE", m_eeSubsystem.stopCommand);
 
+    // Build an auto chooser. This will use Commands.none() as the default option.
+    autoChooser = AutoBuilder.buildAutoChooser();
 
+    SmartDashboard.putData("Auto Chooser", autoChooser);
+
+    // Field visualization
     field = new Field2d();
-        SmartDashboard.putData("Field", field);
+    SmartDashboard.putData("Field", field);
 
         // Logging callback for current robot pose
         PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {
@@ -89,8 +94,6 @@ public class RobotContainer {
             // Do whatever you want with the poses here
             field.getObject("path").setPoses(poses);
         });
-    
-    SmartDashboard.putData("Field", field);
 
     // Configure the button bindings
     configureButtonBindings();
@@ -126,15 +129,7 @@ public class RobotContainer {
             m_robotDrive));
     
     // Set the default command for the EESubsystem
-    m_eeSubsystem.setDefaultCommand(m_eeSubsystem.stopCommand);
-    
-    // Build an auto chooser. This will use Commands.none() as the default option.
-    autoChooser = AutoBuilder.buildAutoChooser();
-
-    // Another option that allows you to specify the default auto by its name
-    // autoChooser = AutoBuilder.buildAutoChooser("My Default Auto");
-    SmartDashboard.putData("Auto Chooser", autoChooser);
-    
+    m_eeSubsystem.setDefaultCommand(m_eeSubsystem.stopCommand);    
   }
 
   /**
@@ -201,7 +196,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-        System.out.println("Auto selected:" + autoChooser.getSelected());
         Command autoCommand = autoChooser.getSelected();
         autoCommand.addRequirements(m_robotDrive, m_eeSubsystem);
         return autoCommand;

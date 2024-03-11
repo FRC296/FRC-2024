@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.5,
-        "y": 7.0
+        "x": 1.15,
+        "y": 6.5
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.167517683109546,
-        "y": 7.070265019274689
+        "x": 2.1499999999999995,
+        "y": 6.5
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Shooting Pos 1"
     },
     {
       "anchor": {
-        "x": 1.3725738150477713,
-        "y": 6.358984244359359
+        "x": 2.9,
+        "y": 7.003080254377342
       },
       "prevControl": {
-        "x": 1.3374413054104266,
-        "y": 6.874261052373746
+        "x": 2.091952278341076,
+        "y": 6.5229359560003
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Close Ring 1"
     }
   ],
   "rotationTargets": [],
@@ -39,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 25.709953780811176,
+    "rotation": 34.15969454566942,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": 40.528181742720534,
     "velocity": 0
   },
   "useDefaultConstraints": true

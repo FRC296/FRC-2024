@@ -412,6 +412,8 @@ private double normalizeAngle(double angle) {
       id = LimelightHelpers.getFiducialID("");
     }
 
+    setX();
+
     controller.setRumble(RumbleType.kRightRumble, 1);
 
   }, this);
