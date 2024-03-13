@@ -1,0 +1,58 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.0329595552201074,
+        "y": 4.578937089400569
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 0.5411044202972841,
+        "y": 0.5738309907432926
+      },
+      "isLocked": false,
+      "linkedName": "Shooting Pos 3"
+    },
+    {
+      "anchor": {
+        "x": 8.293678213604645,
+        "y": 0.772915212021579
+      },
+      "prevControl": {
+        "x": 7.293678213604645,
+        "y": 0.772915212021579
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Far Ring 5"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 0,
+      "rotateFast": false
+    }
+  ],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": -48.366460663429685,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

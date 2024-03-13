@@ -1,0 +1,58 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.0329595552201074,
+        "y": 4.578937089400569
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.8410072768790318,
+        "y": 3.9699735890199306
+      },
+      "isLocked": false,
+      "linkedName": "Shooting Pos 3"
+    },
+    {
+      "anchor": {
+        "x": 2.789585037087334,
+        "y": 4.11050362756931
+      },
+      "prevControl": {
+        "x": 1.7895850370873339,
+        "y": 4.11050362756931
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Close Ring 3"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 0,
+      "rotateFast": false
+    }
+  ],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": -46.123302714075486,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}
