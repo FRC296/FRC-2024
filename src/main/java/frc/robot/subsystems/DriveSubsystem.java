@@ -400,11 +400,11 @@ private double normalizeAngle(double angle) {
     double tx = LimelightHelpers.getTX("");
     double id = LimelightHelpers.getFiducialID("");
 
-    while(!(id == 4 || id == 7) || Math.abs(tx) > 1){
+    while(!(id == 4 || id == 7) || Math.abs(tx) > 3){
       if (!(id == 4 || id == 7)) {
         rotateToDegrees(0);
       } else {
-        double targetingAngularVelocity = 0.06 * tx;
+        double targetingAngularVelocity = 0.065 * tx;
         // targetingAngularVelocity *= Constants.DriveConstants.kMaxAngularSpeed;
         rotate(-targetingAngularVelocity);
       }

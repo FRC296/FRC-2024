@@ -57,8 +57,10 @@ public class RobotContainer {
     m_robotDrive = new DriveSubsystem(m_driverController);
     m_eeSubsystem = new EESubsystem(m_driverController);
 
+    SmartDashboard.putBoolean("Has Note", m_eeSubsystem.getHasNote());
+
     // Register Named Commands
-    NamedCommands.registerCommand("intake", m_eeSubsystem.intakeCommand);
+    NamedCommands.registerCommand("intake", m_eeSubsystem.intakeCommand.onlyWhile(() -> !m_eeSubsystem.getHasNote()).andThen(m_eeSubsystem.instantStop));
     NamedCommands.registerCommand("aimedShot", (m_robotDrive.alignToTargetCommand.alongWith(m_eeSubsystem.revUpCommand)).andThen(m_eeSubsystem.quickShotCommand));
     NamedCommands.registerCommand("SetX", m_robotDrive.setXCommand);
     NamedCommands.registerCommand("revUp", m_eeSubsystem.revUpCommand);
@@ -169,13 +171,13 @@ public class RobotContainer {
         
     // When run bumper is pressed, run the simple shot command
     JoystickButton rightBumper = new JoystickButton(m_driverController, Button.kRightBumper.value);
-        rightBumper.onTrue(m_eeSubsystem.simpleShotCommand);
         rightBumper.onTrue(m_robotDrive.setXCommand);
+        rightBumper.onTrue(m_eeSubsystem.simpleShotCommand);
 
     // When left bumper is pressed, run the amp shot command
     JoystickButton leftBumper = new JoystickButton(m_driverController, Button.kLeftBumper.value);
-        leftBumper.onTrue(m_eeSubsystem.ampShotCommand);
         leftBumper.onTrue(m_robotDrive.setXCommand);
+        leftBumper.onTrue(m_eeSubsystem.ampShotCommand);
 
     // When the back button is pressed, zero the gyro
     JoystickButton backButton = new JoystickButton(m_driverController, Button.kBack.value);

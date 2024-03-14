@@ -13,9 +13,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class EESubsystem extends SubsystemBase {
 
-    TalonSRX m_topBelt = new TalonSRX(4);
+    TalonSRX m_topBelt = new TalonSRX(3);
     TalonSRX m_bottomBelt = new TalonSRX(2);
-    TalonSRX m_topShooter = new TalonSRX(3);
+    TalonSRX m_topShooter = new TalonSRX(4);
     TalonSRX m_bottomShooter = new TalonSRX(1);
 
     DigitalInput beamBreak = new DigitalInput(0);
@@ -46,15 +46,13 @@ public class EESubsystem extends SubsystemBase {
             }
         } else {
             m_topBelt.set(ControlMode.PercentOutput, 0);
+            // intakeCommand.end(false);
         }
     }
 
     // Intake as a command
-    public InstantCommand intakeCommand = new InstantCommand(() -> {
-        while(!hasNote) {
-            intake();
-        }
-        m_topBelt.set(ControlMode.PercentOutput, 0);
+    public RunCommand intakeCommand = new RunCommand(() -> {
+        intake();
     },
     this);
 
@@ -87,7 +85,7 @@ public class EESubsystem extends SubsystemBase {
     public InstantCommand simpleShotCommand = new InstantCommand(() -> {    
         m_topShooter.set(ControlMode.PercentOutput, 1);
         m_bottomShooter.set(ControlMode.PercentOutput, 1);
-        Timer.delay(0.5);
+        Timer.delay(0.85);
         m_topBelt.set(ControlMode.PercentOutput, 1);
         Timer.delay(0.65);
         m_topBelt.set(ControlMode.PercentOutput, 0);
@@ -113,6 +111,13 @@ public class EESubsystem extends SubsystemBase {
 
     // Stop the shooter and belt
     public RunCommand stopCommand = new RunCommand(() -> {
+        m_topBelt.set(ControlMode.PercentOutput, 0);
+        m_bottomShooter.set(ControlMode.PercentOutput, 0);
+        m_topShooter.set(ControlMode.PercentOutput, 0);
+    },
+    this);
+
+    public InstantCommand instantStop = new InstantCommand(() -> {
         m_topBelt.set(ControlMode.PercentOutput, 0);
         m_bottomShooter.set(ControlMode.PercentOutput, 0);
         m_topShooter.set(ControlMode.PercentOutput, 0);
