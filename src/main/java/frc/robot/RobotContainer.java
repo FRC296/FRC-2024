@@ -16,12 +16,14 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.OIConstants;
+import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.EESubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 
 
 /*
@@ -34,6 +36,7 @@ public class RobotContainer {
   // The robot's subsystems
   private final DriveSubsystem m_robotDrive;
   private final EESubsystem m_eeSubsystem;
+  private final ClimberSubsystem m_climberSubsystem;
 
     // The driver's controller
     XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -56,6 +59,7 @@ public class RobotContainer {
     // Subsystem instantiation
     m_robotDrive = new DriveSubsystem(m_driverController);
     m_eeSubsystem = new EESubsystem(m_driverController);
+    m_climberSubsystem = new ClimberSubsystem();
 
     SmartDashboard.putBoolean("Has Note", m_eeSubsystem.getHasNote());
 
@@ -186,6 +190,12 @@ public class RobotContainer {
                 m_robotDrive.zeroHeading();
             },
             m_robotDrive));
+
+    // D pad up and down control the climber
+    POVButton dpadUp = new POVButton(m_driverController, 0);
+        dpadUp.onTrue(m_climberSubsystem.extendClimberCommand);
+    POVButton dpadDown = new POVButton(m_driverController, 180);
+        dpadDown.onTrue(m_climberSubsystem.retractClimberCommand);
 
     JoystickButton startButton = new JoystickButton(m_driverController, Button.kStart.value);
         startButton.onTrue(m_eeSubsystem.reverseCommand);
