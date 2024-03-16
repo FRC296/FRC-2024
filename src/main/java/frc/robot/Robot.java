@@ -4,9 +4,15 @@
 
 package frc.robot;
 
+import java.util.Optional;
+
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.ClimberSubsystem;
@@ -23,7 +29,9 @@ public class Robot extends TimedRobot {
   private RobotContainer m_robotContainer;
 
   private UsbCamera camera;
-  
+
+  private AddressableLED fan = new AddressableLED(9);
+  private AddressableLEDBuffer buffer = new AddressableLEDBuffer(8);
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -37,6 +45,24 @@ public class Robot extends TimedRobot {
     this.camera = CameraServer.startAutomaticCapture();
     this.camera.setResolution(160, 120);
     this.camera.setFPS(15);
+
+    fan.setLength(buffer.getLength());
+    for (int i = 0; i < buffer.getLength(); i++) {
+      buffer.setRGB(i, 255, 255, 255);
+    }
+    // buffer.setRGB(0, 0, 0, 255);
+    // buffer.setRGB(1, 0, 255, 0);
+    // buffer.setRGB(2, 255, 0, 0);
+    // buffer.setRGB(3, 0, 0, 255);
+    // buffer.setRGB(4, 0, 255, 0);
+    // buffer.setRGB(5, 255, 0, 0);
+    // buffer.setRGB(6, 0, 0, 255);
+    // buffer.setRGB(7, 0, 255, 0);
+
+    fan.setData(buffer);
+    fan.start();
+
+    //fan.
     
   }
 
@@ -54,6 +80,20 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+
+
+    Optional<Alliance> alliance = DriverStation.getAlliance();
+    if (alliance.isPresent()) {
+      for (int i = 0; i < buffer.getLength(); i++) {
+        if (alliance.get() == Alliance.Red) {
+          buffer.setRGB(i, 255, 0, 0);
+        } else {
+          buffer.setRGB(i, 0, 0, 255);
+        }
+      }
+      fan.setData(buffer);
+    }
+
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
