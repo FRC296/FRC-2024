@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -8,8 +9,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ClimberSubsystem extends SubsystemBase{
 
-    DoubleSolenoid climberLeft = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1);
-    DoubleSolenoid climberRight = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 2, 3);
+    Compressor compressor = new Compressor(61,PneumaticsModuleType.CTREPCM);
+    DoubleSolenoid climberLeft = new DoubleSolenoid(61,PneumaticsModuleType.CTREPCM, 0, 1);
+    DoubleSolenoid climberRight = new DoubleSolenoid(61,PneumaticsModuleType.CTREPCM, 7, 6);
+
+    public ClimberSubsystem(){
+        compressor.enableDigital();
+    }
 
     public void extendClimber() {
         climberLeft.set(Value.kForward);
@@ -28,5 +34,6 @@ public class ClimberSubsystem extends SubsystemBase{
     public InstantCommand retractClimberCommand = new InstantCommand(() -> {
         retractClimber();
     }, this);
+
 }
 

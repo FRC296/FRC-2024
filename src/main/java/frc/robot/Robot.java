@@ -9,6 +9,7 @@ import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.ClimberSubsystem;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -36,6 +37,7 @@ public class Robot extends TimedRobot {
     this.camera = CameraServer.startAutomaticCapture();
     this.camera.setResolution(160, 120);
     this.camera.setFPS(15);
+    
   }
 
   /**
