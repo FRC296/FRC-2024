@@ -35,7 +35,7 @@ import edu.wpi.first.wpilibj2.command.button.POVButton;
 public class RobotContainer {
   // The robot's subsystems
   private final DriveSubsystem m_robotDrive;
-  private final EESubsystem m_eeSubsystem;
+  public final EESubsystem m_eeSubsystem;
   private final ClimberSubsystem m_climberSubsystem;
 
     // The driver's controller
@@ -60,8 +60,6 @@ public class RobotContainer {
     m_robotDrive = new DriveSubsystem(m_driverController);
     m_eeSubsystem = new EESubsystem(m_driverController);
     m_climberSubsystem = new ClimberSubsystem();
-
-    SmartDashboard.putBoolean("Has Note", m_eeSubsystem.getHasNote());
 
     // Register Named Commands
     NamedCommands.registerCommand("intake", m_eeSubsystem.intakeCommand.onlyWhile(() -> !m_eeSubsystem.getHasNote()).andThen(m_eeSubsystem.instantStop));
@@ -135,7 +133,7 @@ public class RobotContainer {
             m_robotDrive));
     
     // Set the default command for the EESubsystem
-    m_eeSubsystem.setDefaultCommand(m_eeSubsystem.stopCommand);    
+    m_eeSubsystem.setDefaultCommand(m_eeSubsystem.stopCommand);
   }
 
   /**

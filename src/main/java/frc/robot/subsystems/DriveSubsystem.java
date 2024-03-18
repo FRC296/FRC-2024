@@ -94,7 +94,7 @@ public class DriveSubsystem extends SubsystemBase {
             this::driveRobotRelative, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
             new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
                     new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-                    new PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
+                    new PIDConstants(4.0, 0.0, 0.0), // Rotation PID constants
                     AutoConstants.kMaxSpeedMetersPerSecond, // Max module speed, in m/s
                     0.4715, // Drive base radius in meters. Distance from robot center to furthest module.
                     new ReplanningConfig() // Default path replanning config. See the API for the options here
@@ -377,6 +377,7 @@ private double normalizeAngle(double angle) {
   public void alignToTarget() {
     double tx = LimelightHelpers.getTX("");
     double id = LimelightHelpers.getFiducialID("");
+    double tz = LimelightHelpers.getBotPose3d_TargetSpace("").getZ();
 
     if(!(id == 4 || id == 7) || Math.abs(tx) > 1){
       if (!(id == 4 || id == 7)) {
@@ -385,12 +386,17 @@ private double normalizeAngle(double angle) {
         double targetingAngularVelocity = 0.06 * tx;
         // targetingAngularVelocity *= Constants.DriveConstants.kMaxAngularSpeed;
         rotate(-targetingAngularVelocity);
+        // if (Math.abs(tz) > 1.8) {
+        //   drive(-0.5, 0, -targetingAngularVelocity, false, true);
+        // } else {
+        //   rotate(-targetingAngularVelocity);
+        // }
       }
     }
 
-    if (Math.abs(tx) < 2 && (id == 4 || id == 7)){
-      controller.setRumble(RumbleType.kRightRumble, 1);
-    }
+    // if (Math.abs(tx) < 2 && (id == 4 || id == 7)){
+    //   controller.setRumble(RumbleType.kRightRumble, 1);
+    // }
   }
 
   /**

@@ -12,6 +12,12 @@
     "data": {
       "commands": [
         {
+          "type": "path",
+          "data": {
+            "pathName": "Jerk"
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "simpleShot"

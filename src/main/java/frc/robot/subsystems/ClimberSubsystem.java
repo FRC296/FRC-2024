@@ -15,6 +15,7 @@ public class ClimberSubsystem extends SubsystemBase{
 
     public ClimberSubsystem(){
         compressor.enableDigital();
+        retractClimber();
     }
 
     public void extendClimber() {

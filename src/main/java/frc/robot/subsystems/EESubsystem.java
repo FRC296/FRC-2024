@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -135,4 +136,9 @@ public class EESubsystem extends SubsystemBase {
         m_topShooter.set(ControlMode.PercentOutput, 0);
     },
     this);
+
+    @Override
+    public void periodic() {
+        SmartDashboard.putBoolean("Has Note", hasNote);
+    }
 }
