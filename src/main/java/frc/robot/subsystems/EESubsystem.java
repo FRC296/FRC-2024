@@ -51,6 +51,10 @@ public class EESubsystem extends SubsystemBase {
         }
     }
 
+    public void overrideIntake() {
+        m_topBelt.set(ControlMode.PercentOutput, 1);
+    }
+
     // Intake as a command
     public RunCommand intakeCommand = new RunCommand(() -> {
         intake();
@@ -71,9 +75,10 @@ public class EESubsystem extends SubsystemBase {
 
     // Shoot at the speaker (without spin up time)
     public InstantCommand quickShotCommand = new InstantCommand(() -> {
-        m_topBelt.set(ControlMode.PercentOutput, 1);
         m_topShooter.set(ControlMode.PercentOutput, 1);
         m_bottomShooter.set(ControlMode.PercentOutput, 1);
+        Timer.delay(0.25);
+        m_topBelt.set(ControlMode.PercentOutput, 1);
         Timer.delay(0.65);
         m_topBelt.set(ControlMode.PercentOutput, 0);
         m_bottomShooter.set(ControlMode.PercentOutput, 0);

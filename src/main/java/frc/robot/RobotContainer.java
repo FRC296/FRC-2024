@@ -117,8 +117,8 @@ public class RobotContainer {
                         true, true);
                     } else {
                         m_robotDrive.drive(
-                            -MathUtil.applyDeadband(Math.signum(m_driverController.getLeftY())*Math.pow(m_driverController.getLeftY(),OIConstants.kDriveStickPower)*OIConstants.kDriveStickMultiplier * 0.5, OIConstants.kDriveDeadband),
-                            -MathUtil.applyDeadband(Math.signum(m_driverController.getLeftX())*Math.pow(m_driverController.getLeftX(),OIConstants.kDriveStickPower)*OIConstants.kDriveStickMultiplier * 0.5, OIConstants.kDriveDeadband),
+                            -MathUtil.applyDeadband(Math.signum(m_driverController.getLeftY())*Math.pow(m_driverController.getLeftY(),OIConstants.kDriveStickPower)*OIConstants.kDriveStickMultiplier * 0.6, OIConstants.kDriveDeadband),
+                            -MathUtil.applyDeadband(Math.signum(m_driverController.getLeftX())*Math.pow(m_driverController.getLeftX(),OIConstants.kDriveStickPower)*OIConstants.kDriveStickMultiplier * 0.6, OIConstants.kDriveDeadband),
                             -MathUtil.applyDeadband((m_driverController.getRightX() + m_driverController.getRightTriggerAxis() - m_driverController.getLeftTriggerAxis()) * OIConstants.kRotStickMultiplier, OIConstants.kDriveDeadband),
                         true, true);
                     }
@@ -170,6 +170,15 @@ public class RobotContainer {
             },
             m_eeSubsystem,
             m_robotDrive));
+
+    // X button intake override
+    JoystickButton XButton = new JoystickButton(m_driverController, Button.kX.value);
+        XButton.whileTrue(new RunCommand(
+            () -> {
+                m_eeSubsystem.overrideIntake();
+            },
+            m_eeSubsystem));
+        BButton.onFalse(m_eeSubsystem.stopCommand);
         
     // When run bumper is pressed, run the simple shot command
     JoystickButton rightBumper = new JoystickButton(m_driverController, Button.kRightBumper.value);

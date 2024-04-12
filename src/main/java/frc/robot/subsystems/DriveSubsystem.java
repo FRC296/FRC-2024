@@ -29,6 +29,7 @@ import frc.robot.LimelightHelpers;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.utils.SwerveUtils;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -406,16 +407,17 @@ private double normalizeAngle(double angle) {
     double tx = LimelightHelpers.getTX("");
     double id = LimelightHelpers.getFiducialID("");
 
-    while(!(id == 4 || id == 7) || Math.abs(tx) > 3){
+    while(!(id == 4 || id == 7) || Math.abs(tx) > 5){
       if (!(id == 4 || id == 7)) {
         rotateToDegrees(0);
       } else {
-        double targetingAngularVelocity = 0.065 * tx;
+        double targetingAngularVelocity = 0.07 * tx;
         // targetingAngularVelocity *= Constants.DriveConstants.kMaxAngularSpeed;
         rotate(-targetingAngularVelocity);
       }
       tx = LimelightHelpers.getTX("");
       id = LimelightHelpers.getFiducialID("");
+      
     }
 
     setX();
